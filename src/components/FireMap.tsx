@@ -75,8 +75,8 @@ const FireMap = ({ incidents, riskLevels }: FireMapProps) => {
     <div className="h-[70vh] w-full rounded-md overflow-hidden shadow-md border">
       <MapContainer 
         className="h-full"
+        zoom={DEFAULT_ZOOM} 
         center={DEFAULT_CENTER}
-        zoom={DEFAULT_ZOOM}
       >
         <TileLayer
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
@@ -87,11 +87,11 @@ const FireMap = ({ incidents, riskLevels }: FireMapProps) => {
           <Circle
             key={risk.district}
             center={getDistrictCoordinates(risk.district)}
-            radius={30000}
             pathOptions={{
               fillColor: getRiskColor(risk.level),
               color: getRiskColor(risk.level),
-              fillOpacity: 0.3
+              fillOpacity: 0.3,
+              radius: 30000
             }}
           >
             <Popup>
