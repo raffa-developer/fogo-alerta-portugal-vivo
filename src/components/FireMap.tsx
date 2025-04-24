@@ -3,10 +3,10 @@ import { useEffect } from 'react';
 import { MapContainer, TileLayer, Marker, Popup, Circle, useMap } from 'react-leaflet';
 import { getRiskColor, getRiskTranslation } from '@/hooks/useFireData';
 import 'leaflet/dist/leaflet.css';
-import { icon, LatLngExpression } from 'leaflet';
+import { Icon, LatLngExpression } from 'leaflet';
 
 // Define custom marker icon to fix the missing icon issue
-const fireIcon = icon({
+const fireIcon = new Icon({
   iconUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon.png',
   iconRetinaUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon-2x.png',
   shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
@@ -75,13 +75,11 @@ const FireMap = ({ incidents, riskLevels }: FireMapProps) => {
     <div className="h-[70vh] w-full rounded-md overflow-hidden shadow-md border">
       <MapContainer 
         className="h-full"
-        scrollWheelZoom={true}
-        center={DEFAULT_CENTER}
         zoom={DEFAULT_ZOOM}
+        center={DEFAULT_CENTER}
       >
         <TileLayer
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
         />
         
         {/* District risk level visualization */}
@@ -94,7 +92,6 @@ const FireMap = ({ incidents, riskLevels }: FireMapProps) => {
               color: getRiskColor(risk.level),
               fillOpacity: 0.3
             }}
-            radius={20000}
           >
             <Popup>
               <div className="font-medium">{risk.district}</div>
@@ -110,7 +107,6 @@ const FireMap = ({ incidents, riskLevels }: FireMapProps) => {
           <Marker 
             key={incident.id} 
             position={[incident.lat, incident.lng] as LatLngExpression}
-            icon={fireIcon}
           >
             <Popup>
               <div className="font-bold">{incident.location}</div>
