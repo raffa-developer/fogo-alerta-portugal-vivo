@@ -3,7 +3,7 @@ import { useEffect } from 'react';
 import { MapContainer, TileLayer, Marker, Popup, Circle, useMap } from 'react-leaflet';
 import { getRiskColor, getRiskTranslation } from '@/hooks/useFireData';
 import 'leaflet/dist/leaflet.css';
-import { icon } from 'leaflet';
+import { icon, LatLngExpression } from 'leaflet';
 
 // Define custom marker icon to fix the missing icon issue
 const fireIcon = icon({
@@ -17,7 +17,7 @@ const fireIcon = icon({
 });
 
 // Center the map on Portugal
-const DEFAULT_CENTER = [39.5, -8.0];
+const DEFAULT_CENTER: LatLngExpression = [39.5, -8.0];
 const DEFAULT_ZOOM = 7;
 
 interface FireMapProps {
@@ -26,7 +26,7 @@ interface FireMapProps {
 }
 
 // Component to recenter map when props change
-const MapUpdater = ({ center, zoom }: { center: [number, number]; zoom: number }) => {
+const MapUpdater = ({ center, zoom }: { center: LatLngExpression; zoom: number }) => {
   const map = useMap();
   
   useEffect(() => {
@@ -44,10 +44,10 @@ const FireMap = ({ incidents, riskLevels }: FireMapProps) => {
   };
 
   // Get district center coordinates for risk circles
-  const getDistrictCoordinates = (district: string) => {
+  const getDistrictCoordinates = (district: string): LatLngExpression => {
     // This would ideally come from a GeoJSON file or API
     // For now using approximate coordinates for demonstration
-    const districtCoords: Record<string, [number, number]> = {
+    const districtCoords: Record<string, LatLngExpression> = {
       'Aveiro': [40.6405, -8.6538],
       'Beja': [38.0153, -7.8632],
       'Braga': [41.5518, -8.4229],
@@ -73,10 +73,15 @@ const FireMap = ({ incidents, riskLevels }: FireMapProps) => {
 
   return (
     <div className="h-[70vh] w-full rounded-md overflow-hidden shadow-md border">
-      <MapContainer center={DEFAULT_CENTER} zoom={DEFAULT_ZOOM} scrollWheelZoom={true} className="h-full">
+      <MapContainer 
+        className="h-full"
+        scrollWheelZoom={true}
+        center={DEFAULT_CENTER}
+        zoom={DEFAULT_ZOOM}
+      >
         <TileLayer
-          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
         />
         
         {/* District risk level visualization */}
@@ -84,12 +89,12 @@ const FireMap = ({ incidents, riskLevels }: FireMapProps) => {
           <Circle
             key={risk.district}
             center={getDistrictCoordinates(risk.district)}
-            radius={20000}
             pathOptions={{
               fillColor: getRiskColor(risk.level),
               color: getRiskColor(risk.level),
               fillOpacity: 0.3
             }}
+            radius={20000}
           >
             <Popup>
               <div className="font-medium">{risk.district}</div>
@@ -104,7 +109,7 @@ const FireMap = ({ incidents, riskLevels }: FireMapProps) => {
         {incidents.map((incident) => (
           <Marker 
             key={incident.id} 
-            position={[incident.lat, incident.lng]} 
+            position={[incident.lat, incident.lng] as LatLngExpression}
             icon={fireIcon}
           >
             <Popup>

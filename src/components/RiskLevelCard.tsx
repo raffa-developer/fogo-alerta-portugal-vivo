@@ -39,10 +39,9 @@ const RiskLevelCard = ({ district, level }: RiskLevelCardProps) => {
         </div>
         <Progress 
           value={getRiskProgress(level)} 
-          className="h-2" 
-          indicatorClassName="bg-gradient-to-r" 
+          className="h-2 bg-gradient-to-r from-[#64B6AC] via-[#FFD166] via-[#F39237] via-[#EA526F] to-[#D62828]"
           style={{ 
-            background: 'linear-gradient(to right, #64B6AC, #FFD166, #F39237, #EA526F, #D62828)',
+            '--tw-gradient-from': '#64B6AC',
             '--tw-gradient-to': getRiskColor(level)
           } as React.CSSProperties}
         />
