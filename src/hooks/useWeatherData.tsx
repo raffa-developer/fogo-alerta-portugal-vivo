@@ -1,4 +1,3 @@
-
 import { useQuery } from '@tanstack/react-query';
 import { toast } from 'sonner';
 
@@ -48,10 +47,45 @@ const estimateHumidity = (weatherType: number, precipProb: number): number => {
   return Math.min(95, Math.round(baseHumidity + (precipFactor * 20)));
 };
 
+// Function to calculate average weather conditions
+const calculateAverageWeather = (data: any[]): WeatherData => {
+  if (!data || data.length === 0) {
+    return {
+      location: 'Portugal (Média Nacional)',
+      temperature: 0,
+      humidity: 0,
+      windSpeed: 0,
+      windDirection: 'N',
+      precipitation: 0,
+      updateTime: new Date().toISOString()
+    };
+  }
+
+  const sum = data.reduce((acc, city) => {
+    return {
+      temperature: acc.temperature + ((city.tMax + city.tMin) / 2),
+      humidity: acc.humidity + estimateHumidity(city.idWeatherType, parseFloat(city.precipitaProb) || 0),
+      windSpeed: acc.windSpeed + mapWindSpeedClass(city.classWindSpeed),
+      precipitation: acc.precipitation + (parseFloat(city.precipitaProb) || 0)
+    };
+  }, { temperature: 0, humidity: 0, windSpeed: 0, precipitation: 0 });
+
+  const count = data.length;
+  
+  return {
+    location: 'Portugal (Média Nacional)',
+    temperature: Math.round(sum.temperature / count),
+    humidity: Math.round(sum.humidity / count),
+    windSpeed: Math.round(sum.windSpeed / count),
+    windDirection: 'N', // Using North as default since we're showing average
+    precipitation: Math.round(sum.precipitation / count),
+    updateTime: new Date().toISOString()
+  };
+};
+
 // Function to fetch weather data from IPMA API
 const fetchWeatherData = async (): Promise<WeatherData[]> => {
   try {
-    // Fetch meteorological data from IPMA API
     const response = await fetch('https://api.ipma.pt/open-data/forecast/meteorology/cities/daily/hp-daily-forecast-day0.json');
     if (!response.ok) {
       throw new Error('Failed to fetch IPMA data');
@@ -59,19 +93,10 @@ const fetchWeatherData = async (): Promise<WeatherData[]> => {
     
     const data = await response.json();
     
-    // Transform IPMA data to match our interface
-    return data.data.map((city: any) => {
-      const location = getLocationNameFromIPMA(city.globalIdLocal);
-      return {
-        location: location || 'Localização desconhecida',
-        temperature: Math.round((city.tMax + city.tMin) / 2), // Average temperature
-        humidity: estimateHumidity(city.idWeatherType, parseFloat(city.precipitaProb) || 0),
-        windSpeed: mapWindSpeedClass(city.classWindSpeed),
-        windDirection: city.predWindDir || 'N',
-        precipitation: parseFloat(city.precipitaProb) || 0, // Precipitation probability
-        updateTime: data.dataUpdate || new Date().toISOString()
-      };
-    });
+    // Calculate and return national average
+    const nationalAverage = calculateAverageWeather(data.data);
+    return [nationalAverage];
+    
   } catch (error) {
     console.error('Error fetching weather data:', error);
     toast.error('Erro ao carregar dados meteorológicos do IPMA');

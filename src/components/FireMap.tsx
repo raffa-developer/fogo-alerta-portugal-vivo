@@ -1,4 +1,3 @@
-
 import { useEffect } from 'react';
 import { MapContainer, TileLayer, Marker, Popup, CircleMarker, useMap } from 'react-leaflet';
 import { getRiskColor, getRiskTranslation } from '@/hooks/useFireData';
@@ -16,7 +15,12 @@ const fireIcon = new L.Icon({
   shadowSize: [41, 41]
 });
 
-// Center the map on Portugal
+// Update bounds for Portugal
+const PORTUGAL_BOUNDS: L.LatLngBoundsExpression = [
+  [36.8, -9.6], // Southwest corner
+  [42.2, -6.1]  // Northeast corner
+];
+
 const DEFAULT_CENTER: [number, number] = [39.5, -8.0];
 const DEFAULT_ZOOM = 7;
 
@@ -25,13 +29,14 @@ interface FireMapProps {
   riskLevels: any[];
 }
 
-// Component to recenter map when props change
-const MapUpdater = ({ center, zoom }: { center: [number, number]; zoom: number }) => {
+// Component to set map bounds
+const MapBounds = () => {
   const map = useMap();
   
   useEffect(() => {
-    map.setView(center, zoom);
-  }, [center, zoom, map]);
+    map.fitBounds(PORTUGAL_BOUNDS);
+    map.setMaxBounds(PORTUGAL_BOUNDS);
+  }, [map]);
   
   return null;
 };
@@ -75,12 +80,15 @@ const FireMap = ({ incidents, riskLevels }: FireMapProps) => {
     <div className="h-[70vh] w-full rounded-md overflow-hidden shadow-md border">
       <MapContainer 
         className="h-full"
-        center={DEFAULT_CENTER}
+        bounds={PORTUGAL_BOUNDS}
         zoom={DEFAULT_ZOOM}
+        minZoom={6}
+        maxZoom={13}
       >
         <TileLayer
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
         />
+        <MapBounds />
         
         {/* District risk level visualization */}
         {riskLevels.map((risk) => (
@@ -92,7 +100,6 @@ const FireMap = ({ incidents, riskLevels }: FireMapProps) => {
               color: getRiskColor(risk.level),
               fillOpacity: 0.3
             }}
-            radius={30}
           >
             <Popup>
               <div className="font-medium">{risk.district}</div>
@@ -130,8 +137,6 @@ const FireMap = ({ incidents, riskLevels }: FireMapProps) => {
             </Popup>
           </Marker>
         ))}
-        
-        <MapUpdater center={DEFAULT_CENTER} zoom={DEFAULT_ZOOM} />
       </MapContainer>
     </div>
   );
