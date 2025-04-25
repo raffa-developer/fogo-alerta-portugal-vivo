@@ -1,6 +1,6 @@
 
 import { useEffect } from 'react';
-import { MapContainer, TileLayer, Marker, Popup, Circle, useMap } from 'react-leaflet';
+import { MapContainer, TileLayer, Marker, Popup, CircleMarker, useMap } from 'react-leaflet';
 import { getRiskColor, getRiskTranslation } from '@/hooks/useFireData';
 import 'leaflet/dist/leaflet.css';
 import L from 'leaflet';
@@ -84,7 +84,7 @@ const FireMap = ({ incidents, riskLevels }: FireMapProps) => {
         
         {/* District risk level visualization */}
         {riskLevels.map((risk) => (
-          <Circle
+          <CircleMarker
             key={risk.district}
             center={getDistrictCoordinates(risk.district)}
             pathOptions={{
@@ -92,7 +92,7 @@ const FireMap = ({ incidents, riskLevels }: FireMapProps) => {
               color: getRiskColor(risk.level),
               fillOpacity: 0.3
             }}
-            radius={30000}
+            radius={30}
           >
             <Popup>
               <div className="font-medium">{risk.district}</div>
@@ -100,7 +100,7 @@ const FireMap = ({ incidents, riskLevels }: FireMapProps) => {
                 Risco: <span className="font-bold">{getRiskTranslation(risk.level)}</span>
               </div>
             </Popup>
-          </Circle>
+          </CircleMarker>
         ))}
         
         {/* Active fire incidents */}

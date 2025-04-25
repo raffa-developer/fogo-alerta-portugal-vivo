@@ -29,20 +29,34 @@ interface FireData {
   timestamp: string;
 }
 
-// Função para verificar e criar uma data válida
-const createValidDate = (dateString: string | null | undefined): string => {
-  if (!dateString) {
-    return new Date().toISOString();
+// Function to create a valid date from API response
+const createValidDate = (incident: any): string => {
+  // First try to use the date and hour fields from the API
+  if (incident.date && incident.hour) {
+    // Parse Portuguese date format (DD/MM/YYYY) to ISO format
+    const [day, month, year] = incident.date.split('/');
+    if (day && month && year) {
+      // Create date with the actual incident date and time
+      const dateString = `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}T${incident.hour}:00`;
+      const parsedDate = new Date(dateString);
+      
+      // Check if valid date
+      if (!isNaN(parsedDate.getTime())) {
+        return parsedDate.toISOString();
+      }
+    }
   }
   
-  const parsedDate = new Date(dateString);
-  
-  // Verificar se a data é válida
-  if (isNaN(parsedDate.getTime())) {
-    return new Date().toISOString();
+  // Fall back to dateTime.sec if available
+  if (incident.dateTime?.sec) {
+    const parsedDate = new Date(incident.dateTime.sec * 1000);
+    if (!isNaN(parsedDate.getTime())) {
+      return parsedDate.toISOString();
+    }
   }
   
-  return parsedDate.toISOString();
+  // If all else fails, return current time
+  return new Date().toISOString();
 };
 
 // Function to map the status from the API to our status types
@@ -79,7 +93,7 @@ const fetchFireData = async (): Promise<FireData> => {
         location: incident.location || 'Unknown',
         lat: parseFloat(incident.lat) || 0,
         lng: parseFloat(incident.lng) || 0,
-        start: createValidDate(incident.date && incident.hour ? `${incident.date} ${incident.hour}` : incident.dateTime?.sec ? new Date(incident.dateTime.sec * 1000).toISOString() : null),
+        start: createValidDate(incident),
         status: mapApiStatus(incident.status),
         type: incident.natureza || 'Unknown',
         resources: {

@@ -1,28 +1,36 @@
 
-import { Flame } from "lucide-react";
+import React from 'react';
+import { Link } from 'react-router-dom';
+import { Flame, Shield } from 'lucide-react';
 
 const Header = () => {
   return (
-    <header className="bg-white shadow-sm border-b sticky top-0 z-10">
-      <div className="container flex items-center justify-between h-16 px-4 md:px-6">
-        <div className="flex items-center space-x-2">
-          <Flame className="h-6 w-6 text-fire" />
-          <h1 className="text-xl font-bold">Fogo Alerta Portugal</h1>
+    <header className="bg-primary text-white shadow-md">
+      <div className="container mx-auto px-4 py-4">
+        <div className="flex items-center justify-between">
+          <Link to="/" className="flex items-center space-x-2">
+            <Flame className="h-6 w-6" />
+            <span className="font-bold text-xl">FireTrack Portugal</span>
+          </Link>
+          
+          <nav className="hidden md:flex items-center space-x-6">
+            <Link to="/" className="hover:text-white/80 transition-colors">
+              Monitorização
+            </Link>
+            <Link to="/prevention" className="flex items-center hover:text-white/80 transition-colors">
+              <Shield className="h-4 w-4 mr-1" />
+              Prevenção
+            </Link>
+          </nav>
+
+          <div className="flex items-center md:hidden">
+            <button className="p-1">
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+              </svg>
+            </button>
+          </div>
         </div>
-        <nav className="hidden md:flex items-center space-x-6">
-          <a href="#" className="text-sm font-medium hover:text-primary/80 transition-colors">
-            Mapa
-          </a>
-          <a href="#" className="text-sm font-medium hover:text-primary/80 transition-colors">
-            Estatísticas
-          </a>
-          <a href="#" className="text-sm font-medium hover:text-primary/80 transition-colors">
-            Prevenção
-          </a>
-          <a href="#" className="text-sm font-medium hover:text-primary/80 transition-colors">
-            Sobre
-          </a>
-        </nav>
       </div>
     </header>
   );
