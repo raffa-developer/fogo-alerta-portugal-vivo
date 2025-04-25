@@ -29,6 +29,22 @@ interface FireData {
   timestamp: string;
 }
 
+// Função para verificar e criar uma data válida
+const createValidDate = (dateString: string | null | undefined): string => {
+  if (!dateString) {
+    return new Date().toISOString();
+  }
+  
+  const parsedDate = new Date(dateString);
+  
+  // Verificar se a data é válida
+  if (isNaN(parsedDate.getTime())) {
+    return new Date().toISOString();
+  }
+  
+  return parsedDate.toISOString();
+};
+
 // Function to fetch fire data from ProCiv API
 const fetchFireData = async (): Promise<FireData> => {
   try {
@@ -47,7 +63,7 @@ const fetchFireData = async (): Promise<FireData> => {
         location: incident.location || 'Unknown',
         lat: parseFloat(incident.lat) || 0,
         lng: parseFloat(incident.lng) || 0,
-        start: incident.date || new Date().toISOString(),
+        start: createValidDate(incident.date),
         status: incident.status?.toLowerCase() === 'active' ? 'active' : 
                 incident.status?.toLowerCase() === 'contained' ? 'contained' : 'extinguished',
         type: incident.natureCode || 'Unknown',

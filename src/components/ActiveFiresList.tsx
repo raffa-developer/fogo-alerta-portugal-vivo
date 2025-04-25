@@ -2,6 +2,8 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Flame } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { format } from "date-fns";
+import { pt } from "date-fns/locale";
 
 interface FireIncident {
   id: string;
@@ -49,44 +51,49 @@ const ActiveFiresList = ({ incidents }: ActiveFiresListProps) => {
           </div>
         ) : (
           <ul className="divide-y">
-            {displayIncidents.map((incident) => (
-              <li key={incident.id} className="p-4 hover:bg-muted/50 transition-colors">
-                <div className="flex items-center justify-between mb-1">
-                  <span className="font-medium">{incident.location}</span>
-                  <Badge variant={
-                    incident.status === 'active' 
-                      ? 'destructive' 
-                      : incident.status === 'contained' 
-                        ? 'default' 
-                        : 'outline'
-                  }>
-                    {incident.status === 'active' 
-                      ? 'Ativo' 
-                      : incident.status === 'contained' 
-                        ? 'Contido' 
-                        : 'Extinto'}
-                  </Badge>
-                </div>
-                <div className="flex justify-between text-sm text-muted-foreground">
-                  <span>{incident.district}</span>
-                  <span>
-                    {new Date(incident.start).toLocaleDateString('pt-PT')} 
-                    {' '}
-                    {new Date(incident.start).toLocaleTimeString('pt-PT', { 
-                      hour: '2-digit', 
-                      minute: '2-digit' 
-                    })}
-                  </span>
-                </div>
-                <div className="mt-1 text-sm">
-                  <span className="text-muted-foreground">Meios: </span>
-                  <span className="font-medium">{incident.resources.men} operacionais</span>
-                  {incident.resources.aerial > 0 && (
-                    <span className="ml-2 font-medium">{incident.resources.aerial} meios aéreos</span>
-                  )}
-                </div>
-              </li>
-            ))}
+            {displayIncidents.map((incident) => {
+              // Certifique-se de que a data é um objeto Date válido
+              const startDate = new Date(incident.start);
+              const isValidDate = !isNaN(startDate.getTime());
+              
+              return (
+                <li key={incident.id} className="p-4 hover:bg-muted/50 transition-colors">
+                  <div className="flex items-center justify-between mb-1">
+                    <span className="font-medium">{incident.location}</span>
+                    <Badge variant={
+                      incident.status === 'active' 
+                        ? 'destructive' 
+                        : incident.status === 'contained' 
+                          ? 'default' 
+                          : 'outline'
+                    }>
+                      {incident.status === 'active' 
+                        ? 'Ativo' 
+                        : incident.status === 'contained' 
+                          ? 'Contido' 
+                          : 'Extinto'}
+                    </Badge>
+                  </div>
+                  <div className="flex justify-between text-sm text-muted-foreground">
+                    <span>{incident.district}</span>
+                    <span>
+                      {isValidDate ? (
+                        format(startDate, 'dd/MM/yyyy HH:mm', { locale: pt })
+                      ) : (
+                        "Data inválida"
+                      )}
+                    </span>
+                  </div>
+                  <div className="mt-1 text-sm">
+                    <span className="text-muted-foreground">Meios: </span>
+                    <span className="font-medium">{incident.resources.men} operacionais</span>
+                    {incident.resources.aerial > 0 && (
+                      <span className="ml-2 font-medium">{incident.resources.aerial} meios aéreos</span>
+                    )}
+                  </div>
+                </li>
+              );
+            })}
             {sortedIncidents.length > 5 && (
               <li className="p-2 text-center">
                 <a href="#" className="text-sm text-primary hover:underline">
