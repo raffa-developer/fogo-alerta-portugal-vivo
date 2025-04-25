@@ -3,10 +3,10 @@ import { useEffect } from 'react';
 import { MapContainer, TileLayer, Marker, Popup, Circle, useMap } from 'react-leaflet';
 import { getRiskColor, getRiskTranslation } from '@/hooks/useFireData';
 import 'leaflet/dist/leaflet.css';
-import { Icon, LatLngExpression } from 'leaflet';
+import L from 'leaflet';
 
 // Define custom marker icon to fix the missing icon issue
-const fireIcon = new Icon({
+const fireIcon = new L.Icon({
   iconUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon.png',
   iconRetinaUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon-2x.png',
   shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
@@ -17,7 +17,7 @@ const fireIcon = new Icon({
 });
 
 // Center the map on Portugal
-const DEFAULT_CENTER: LatLngExpression = [39.5, -8.0];
+const DEFAULT_CENTER: [number, number] = [39.5, -8.0];
 const DEFAULT_ZOOM = 7;
 
 interface FireMapProps {
@@ -26,7 +26,7 @@ interface FireMapProps {
 }
 
 // Component to recenter map when props change
-const MapUpdater = ({ center, zoom }: { center: LatLngExpression; zoom: number }) => {
+const MapUpdater = ({ center, zoom }: { center: [number, number]; zoom: number }) => {
   const map = useMap();
   
   useEffect(() => {
@@ -44,10 +44,10 @@ const FireMap = ({ incidents, riskLevels }: FireMapProps) => {
   };
 
   // Get district center coordinates for risk circles
-  const getDistrictCoordinates = (district: string): LatLngExpression => {
+  const getDistrictCoordinates = (district: string): [number, number] => {
     // This would ideally come from a GeoJSON file or API
     // For now using approximate coordinates for demonstration
-    const districtCoords: Record<string, LatLngExpression> = {
+    const districtCoords: Record<string, [number, number]> = {
       'Aveiro': [40.6405, -8.6538],
       'Beja': [38.0153, -7.8632],
       'Braga': [41.5518, -8.4229],
@@ -90,9 +90,9 @@ const FireMap = ({ incidents, riskLevels }: FireMapProps) => {
             pathOptions={{
               fillColor: getRiskColor(risk.level),
               color: getRiskColor(risk.level),
-              fillOpacity: 0.3,
-              radius: 30000
+              fillOpacity: 0.3
             }}
+            radius={30000}
           >
             <Popup>
               <div className="font-medium">{risk.district}</div>
@@ -107,7 +107,7 @@ const FireMap = ({ incidents, riskLevels }: FireMapProps) => {
         {incidents.map((incident) => (
           <Marker 
             key={incident.id} 
-            position={[incident.lat, incident.lng] as LatLngExpression}
+            position={[incident.lat, incident.lng]}
             icon={fireIcon}
           >
             <Popup>

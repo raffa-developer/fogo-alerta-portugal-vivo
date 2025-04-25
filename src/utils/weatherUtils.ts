@@ -23,4 +23,3 @@ export const getFireRiskFromWeather = (temperature: number, humidity: number, wi
   // Weighted average of factors
   return (tempFactor * 0.4 + humidityFactor * 0.4 + windFactor * 0.2) * 100;
 };
-

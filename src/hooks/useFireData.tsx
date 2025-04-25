@@ -45,6 +45,22 @@ const createValidDate = (dateString: string | null | undefined): string => {
   return parsedDate.toISOString();
 };
 
+// Function to map the status from the API to our status types
+const mapApiStatus = (status: string): 'active' | 'contained' | 'extinguished' => {
+  if (!status) return 'extinguished';
+  
+  const lowerStatus = status.toLowerCase();
+  
+  if (lowerStatus.includes('despacho') || lowerStatus.includes('curso') || 
+      lowerStatus.includes('chegada') || lowerStatus.includes('confirmação')) {
+    return 'active';
+  } else if (lowerStatus.includes('resolução')) {
+    return 'contained';
+  } else {
+    return 'extinguished';
+  }
+};
+
 // Function to fetch fire data from ProCiv API
 const fetchFireData = async (): Promise<FireData> => {
   try {
@@ -63,10 +79,9 @@ const fetchFireData = async (): Promise<FireData> => {
         location: incident.location || 'Unknown',
         lat: parseFloat(incident.lat) || 0,
         lng: parseFloat(incident.lng) || 0,
-        start: createValidDate(incident.date),
-        status: incident.status?.toLowerCase() === 'active' ? 'active' : 
-                incident.status?.toLowerCase() === 'contained' ? 'contained' : 'extinguished',
-        type: incident.natureCode || 'Unknown',
+        start: createValidDate(incident.date && incident.hour ? `${incident.date} ${incident.hour}` : incident.dateTime?.sec ? new Date(incident.dateTime.sec * 1000).toISOString() : null),
+        status: mapApiStatus(incident.status),
+        type: incident.natureza || 'Unknown',
         resources: {
           men: parseInt(incident.man) || 0,
           terrain: parseInt(incident.terrain) || 0,

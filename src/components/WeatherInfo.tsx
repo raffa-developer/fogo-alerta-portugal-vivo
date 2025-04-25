@@ -1,7 +1,7 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { useWeatherData } from "@/hooks/useWeatherData";
 import { Skeleton } from "@/components/ui/skeleton";
+import { windDirectionToText } from "@/utils/weatherUtils";
 
 interface WeatherCondition {
   location: string;
@@ -63,7 +63,7 @@ const WeatherInfo = ({ conditions = [], isLoading }: WeatherInfoProps) => {
               <span className="text-4xl font-bold">{selectedLocation.temperature}°C</span>
               {selectedLocation.precipitation > 0 && (
                 <span className="ml-2 text-sm text-muted-foreground">
-                  {selectedLocation.precipitation}mm precipitação
+                  {selectedLocation.precipitation}% probabilidade de precipitação
                 </span>
               )}
             </div>
@@ -71,12 +71,12 @@ const WeatherInfo = ({ conditions = [], isLoading }: WeatherInfoProps) => {
             <div className="grid grid-cols-2 gap-4 mt-4">
               <div className="space-y-1">
                 <div className="text-sm text-muted-foreground">Humidade</div>
-                <div className="font-medium">{selectedLocation.humidity}%</div>
+                <div className="font-medium">{selectedLocation.humidity || "N/A"}%</div>
               </div>
               <div className="space-y-1">
                 <div className="text-sm text-muted-foreground">Vento</div>
                 <div className="font-medium">
-                  {selectedLocation.windSpeed} km/h {selectedLocation.windDirection}
+                  {selectedLocation.windSpeed || "N/A"} km/h {windDirectionToText(selectedLocation.windDirection)}
                 </div>
               </div>
               <div className="space-y-1 col-span-2">

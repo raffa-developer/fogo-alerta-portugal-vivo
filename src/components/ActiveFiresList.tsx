@@ -35,6 +35,16 @@ const ActiveFiresList = ({ incidents }: ActiveFiresListProps) => {
   
   // Only show up to 5 incidents in the list
   const displayIncidents = sortedIncidents.slice(0, 5);
+
+  // Function to translate status to Portuguese
+  const translateStatus = (status: string): string => {
+    switch(status) {
+      case 'active': return 'Ativo';
+      case 'contained': return 'Contido';
+      case 'extinguished': return 'Extinto';
+      default: return status;
+    }
+  };
   
   return (
     <Card>
@@ -67,11 +77,7 @@ const ActiveFiresList = ({ incidents }: ActiveFiresListProps) => {
                           ? 'default' 
                           : 'outline'
                     }>
-                      {incident.status === 'active' 
-                        ? 'Ativo' 
-                        : incident.status === 'contained' 
-                          ? 'Contido' 
-                          : 'Extinto'}
+                      {translateStatus(incident.status)}
                     </Badge>
                   </div>
                   <div className="flex justify-between text-sm text-muted-foreground">
