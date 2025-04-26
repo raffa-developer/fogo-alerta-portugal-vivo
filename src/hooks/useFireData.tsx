@@ -1,4 +1,3 @@
-
 import { useQuery } from '@tanstack/react-query';
 import { toast } from 'sonner';
 
@@ -21,6 +20,7 @@ interface FireIncident {
 interface RiskLevel {
   district: string;
   level: 'low' | 'moderate' | 'high' | 'very-high' | 'extreme';
+  temperature?: number;
 }
 
 interface FireData {
@@ -29,25 +29,19 @@ interface FireData {
   timestamp: string;
 }
 
-// Function to create a valid date from API response
 const createValidDate = (incident: any): string => {
-  // First try to use the date and hour fields from the API
   if (incident.date && incident.hour) {
-    // Parse Portuguese date format (DD/MM/YYYY) to ISO format
     const [day, month, year] = incident.date.split('/');
     if (day && month && year) {
-      // Create date with the actual incident date and time
       const dateString = `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}T${incident.hour}:00`;
       const parsedDate = new Date(dateString);
       
-      // Check if valid date
       if (!isNaN(parsedDate.getTime())) {
         return parsedDate.toISOString();
       }
     }
   }
   
-  // Fall back to dateTime.sec if available
   if (incident.dateTime?.sec) {
     const parsedDate = new Date(incident.dateTime.sec * 1000);
     if (!isNaN(parsedDate.getTime())) {
@@ -55,11 +49,9 @@ const createValidDate = (incident: any): string => {
     }
   }
   
-  // If all else fails, return current time
   return new Date().toISOString();
 };
 
-// Function to map the status from the API to our status types
 const mapApiStatus = (status: string): 'active' | 'contained' | 'extinguished' => {
   if (!status) return 'extinguished';
   
@@ -75,10 +67,8 @@ const mapApiStatus = (status: string): 'active' | 'contained' | 'extinguished' =
   }
 };
 
-// Function to fetch fire risk data from IPMA API
 const fetchFireRiskData = async (): Promise<RiskLevel[]> => {
   try {
-    // 1. First, we fetch the weather data from IPMA which we'll use to calculate fire risk
     const response = await fetch('https://api.ipma.pt/open-data/forecast/meteorology/cities/daily/hp-daily-forecast-day0.json');
     if (!response.ok) {
       throw new Error('Failed to fetch IPMA data');
@@ -86,7 +76,6 @@ const fetchFireRiskData = async (): Promise<RiskLevel[]> => {
     
     const weatherData = await response.json();
     
-    // 2. Define the districts we're interested in
     const districts = [
       'Aveiro', 'Beja', 'Braga', 'Bragança', 'Castelo Branco',
       'Coimbra', 'Évora', 'Faro', 'Guarda', 'Leiria',
@@ -94,7 +83,6 @@ const fetchFireRiskData = async (): Promise<RiskLevel[]> => {
       'Viana do Castelo', 'Vila Real', 'Viseu'
     ];
     
-    // 3. Create mapping between IPMA location IDs and district names
     const locationMap: Record<number, string> = {
       1010500: 'Aveiro',
       1020500: 'Beja',
@@ -116,37 +104,32 @@ const fetchFireRiskData = async (): Promise<RiskLevel[]> => {
       1182300: 'Viseu'
     };
     
-    // 4. Calculate fire risk for each district based on their weather conditions
     const riskLevels: RiskLevel[] = districts.map(district => {
-      // Find the weather data for this district
       const districtWeatherData = weatherData.data.find((location: any) => 
         locationMap[location.globalIdLocal] === district
       );
       
       if (districtWeatherData) {
-        // Calculate fire risk based on temperature, humidity, wind speed and precipitation
         const tempRisk = calculateTemperatureRisk(districtWeatherData.tMax);
         const windRisk = calculateWindRisk(districtWeatherData.classWindSpeed);
         const precipRisk = calculatePrecipitationRisk(Number(districtWeatherData.precipitaProb || 0));
         
-        // Humidity is not directly provided by IPMA, so we estimate it based on other factors
         const estimatedHumidity = estimateHumidity(districtWeatherData.idWeatherType, Number(districtWeatherData.precipitaProb || 0));
         const humidityRisk = calculateHumidityRisk(estimatedHumidity);
         
-        // Calculate final risk score (weighted average)
         const riskScore = (tempRisk * 0.4) + (humidityRisk * 0.3) + (windRisk * 0.2) + (precipRisk * 0.1);
         
-        // Determine risk level based on score
         return {
           district,
-          level: getRiskLevelFromScore(riskScore)
+          level: getRiskLevelFromScore(riskScore),
+          temperature: Math.round(districtWeatherData.tMax)
         };
       }
       
-      // If no weather data found for this district, default to moderate risk
       return {
         district,
-        level: 'moderate'
+        level: 'moderate',
+        temperature: undefined
       };
     });
     
@@ -154,13 +137,13 @@ const fetchFireRiskData = async (): Promise<RiskLevel[]> => {
   } catch (error) {
     console.error('Error fetching fire risk data:', error);
     
-    // In case of API failure, fall back to the default risk levels
-    return createDefaultRiskLevels();
+    return createDefaultRiskLevels().map(risk => ({
+      ...risk,
+      temperature: undefined
+    }));
   }
 };
 
-// Helper function to calculate risk based on temperature
-// Higher temperature = higher risk
 const calculateTemperatureRisk = (temperature: number): number => {
   if (temperature < 15) return 0.2;
   if (temperature < 20) return 0.4;
@@ -169,24 +152,18 @@ const calculateTemperatureRisk = (temperature: number): number => {
   return 1.0;
 };
 
-// Helper function to calculate risk based on wind speed class
-// Higher wind speed = higher risk
 const calculateWindRisk = (classWindSpeed: number): number => {
   if (classWindSpeed === 1) return 0.3;
   if (classWindSpeed === 2) return 0.6;
   if (classWindSpeed === 3) return 0.8;
   if (classWindSpeed === 4) return 1.0;
-  return 0.4; // default
+  return 0.4;
 };
 
-// Helper function to calculate risk based on precipitation probability
-// Higher precipitation probability = lower risk
 const calculatePrecipitationRisk = (precipProb: number): number => {
   return Math.max(0, 1 - (precipProb / 100));
 };
 
-// Helper function to calculate risk based on humidity
-// Lower humidity = higher risk
 const calculateHumidityRisk = (humidity: number): number => {
   if (humidity > 80) return 0.2;
   if (humidity > 60) return 0.4;
@@ -195,31 +172,23 @@ const calculateHumidityRisk = (humidity: number): number => {
   return 1.0;
 };
 
-// Helper function to estimate humidity based on weather type and precipitation
 const estimateHumidity = (weatherType: number, precipProb: number): number => {
-  // Weather types: 1 (clear), 2-3 (partly cloudy), 4-9 (cloudy/rainy), 10+ (thunderstorm)
-  let baseHumidity = 50;  // Default humidity
+  let baseHumidity = 50;
   
   if (weatherType >= 9) {
-    // Heavy rain or thunderstorms
     baseHumidity = 85;
   } else if (weatherType >= 4) {
-    // Cloudy or light rain
     baseHumidity = 70;
   } else if (weatherType >= 2) {
-    // Partly cloudy
     baseHumidity = 60;
   } else {
-    // Clear sky
     baseHumidity = 45;
   }
   
-  // Adjust based on precipitation probability
   const precipFactor = precipProb / 100;
   return Math.min(95, Math.round(baseHumidity + (precipFactor * 20)));
 };
 
-// Helper function to convert risk score to risk level
 const getRiskLevelFromScore = (score: number): 'low' | 'moderate' | 'high' | 'very-high' | 'extreme' => {
   if (score < 0.25) return 'low';
   if (score < 0.45) return 'moderate';
@@ -228,7 +197,6 @@ const getRiskLevelFromScore = (score: number): 'low' | 'moderate' | 'high' | 've
   return 'extreme';
 };
 
-// Create default risk levels in case API fails
 const createDefaultRiskLevels = (): RiskLevel[] => {
   const districts = [
     'Aveiro', 'Beja', 'Braga', 'Bragança', 'Castelo Branco',
@@ -254,7 +222,6 @@ const createDefaultRiskLevels = (): RiskLevel[] => {
   });
 };
 
-// Function to fetch fire data from ProCiv API
 const fetchFireData = async (): Promise<FireData> => {
   try {
     const [incidentsResponse, riskLevels] = await Promise.all([
@@ -262,10 +229,9 @@ const fetchFireData = async (): Promise<FireData> => {
         if (!res.ok) throw new Error('Failed to fetch fire data');
         return res.json();
       }),
-      fetchFireRiskData() // Get risk levels from IPMA weather data
+      fetchFireRiskData()
     ]);
     
-    // Transform the incidents data to match our interface
     const incidents: FireIncident[] = incidentsResponse.data && Array.isArray(incidentsResponse.data) ? 
       incidentsResponse.data.map((incident: any) => ({
         id: incident.id || String(Math.random()),
@@ -299,12 +265,11 @@ export function useFireData() {
   return useQuery({
     queryKey: ['fireData'],
     queryFn: fetchFireData,
-    refetchInterval: 60000, // Refetch every minute
-    staleTime: 30000, // Consider data stale after 30 seconds
+    refetchInterval: 60000,
+    staleTime: 30000,
   });
 }
 
-// Calculate risk color based on level
 export function getRiskColor(level: string): string {
   switch(level) {
     case 'low': 

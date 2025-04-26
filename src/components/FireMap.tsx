@@ -1,11 +1,9 @@
-
 import { useEffect } from 'react';
 import { MapContainer, TileLayer, Marker, Popup, CircleMarker, useMap } from 'react-leaflet';
 import { getRiskColor, getRiskTranslation } from '@/hooks/useFireData';
 import 'leaflet/dist/leaflet.css';
 import L from 'leaflet';
 
-// Define custom marker icon to fix the missing icon issue
 const fireIcon = new L.Icon({
   iconUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon.png',
   iconRetinaUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon-2x.png',
@@ -16,10 +14,9 @@ const fireIcon = new L.Icon({
   shadowSize: [41, 41]
 });
 
-// Update bounds for Portugal
 const PORTUGAL_BOUNDS: L.LatLngBoundsExpression = [
-  [36.8, -9.6], // Southwest corner
-  [42.2, -6.1]  // Northeast corner
+  [36.8, -9.6],
+  [42.2, -6.1]
 ];
 
 const DEFAULT_CENTER: [number, number] = [39.5, -8.0];
@@ -30,7 +27,6 @@ interface FireMapProps {
   riskLevels: any[];
 }
 
-// Component to set map bounds
 const MapBounds = () => {
   const map = useMap();
   
@@ -43,16 +39,12 @@ const MapBounds = () => {
 };
 
 const FireMap = ({ incidents, riskLevels }: FireMapProps) => {
-  // Match incidents with district risk levels
   const getDistrictRisk = (district: string) => {
     const risk = riskLevels.find(r => r.district === district);
     return risk ? risk.level : 'low';
   };
 
-  // Get district center coordinates for risk circles
   const getDistrictCoordinates = (district: string): [number, number] => {
-    // This would ideally come from a GeoJSON file or API
-    // For now using approximate coordinates for demonstration
     const districtCoords: Record<string, [number, number]> = {
       'Aveiro': [40.6405, -8.6538],
       'Beja': [38.0153, -7.8632],
@@ -80,17 +72,17 @@ const FireMap = ({ incidents, riskLevels }: FireMapProps) => {
   return (
     <div className="h-[70vh] w-full rounded-md overflow-hidden shadow-md border">
       <MapContainer 
-        className="h-full"
         center={DEFAULT_CENTER}
         minZoom={6}
         maxZoom={13}
+        zoom={DEFAULT_ZOOM}
+        bounds={PORTUGAL_BOUNDS}
       >
         <TileLayer
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
         />
         <MapBounds />
         
-        {/* District risk level visualization */}
         {riskLevels.map((risk) => (
           <CircleMarker
             key={risk.district}
@@ -107,7 +99,9 @@ const FireMap = ({ incidents, riskLevels }: FireMapProps) => {
             <Popup>
               <div className="font-medium">{risk.district}</div>
               <div className="text-sm">
-                Temperatura: <span className="font-bold">{risk.temperature ? risk.temperature : '?'}°C</span>
+                Temperatura: <span className="font-bold">
+                  {risk.temperature !== undefined ? `${risk.temperature}°C` : '?°C'}
+                </span>
               </div>
               <div className="text-sm">
                 Risco: <span className="font-bold">{getRiskTranslation(risk.level)}</span>
@@ -116,7 +110,6 @@ const FireMap = ({ incidents, riskLevels }: FireMapProps) => {
           </CircleMarker>
         ))}
         
-        {/* Active fire incidents */}
         {incidents.map((incident) => (
           <Marker 
             key={incident.id} 
