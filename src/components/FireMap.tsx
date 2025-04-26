@@ -1,8 +1,17 @@
+
 import { useEffect } from 'react';
 import { MapContainer, TileLayer, Marker, Popup, CircleMarker, useMap } from 'react-leaflet';
 import { getRiskColor, getRiskTranslation } from '@/hooks/useFireData';
 import 'leaflet/dist/leaflet.css';
 import L from 'leaflet';
+
+// Fix Leaflet icon issue in React
+delete (L.Icon.Default.prototype as any)._getIconUrl;
+L.Icon.Default.mergeOptions({
+  iconRetinaUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon-2x.png',
+  iconUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon.png',
+  shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png'
+});
 
 const fireIcon = new L.Icon({
   iconUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon.png',
@@ -72,14 +81,15 @@ const FireMap = ({ incidents, riskLevels }: FireMapProps) => {
   return (
     <div className="h-[70vh] w-full rounded-md overflow-hidden shadow-md border">
       <MapContainer 
-        center={DEFAULT_CENTER}
+        className="h-full w-full"
+        zoom={DEFAULT_ZOOM}
         minZoom={6}
         maxZoom={13}
-        zoom={DEFAULT_ZOOM}
         bounds={PORTUGAL_BOUNDS}
       >
         <TileLayer
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
         />
         <MapBounds />
         
@@ -94,7 +104,7 @@ const FireMap = ({ incidents, riskLevels }: FireMapProps) => {
               fillOpacity: 0.6,
               opacity: 0.8
             }}
-            radius={20}
+            radius={15}
           >
             <Popup>
               <div className="font-medium">{risk.district}</div>
@@ -114,7 +124,6 @@ const FireMap = ({ incidents, riskLevels }: FireMapProps) => {
           <Marker 
             key={incident.id} 
             position={[incident.lat, incident.lng]}
-            icon={fireIcon}
           >
             <Popup>
               <div className="font-bold">{incident.location}</div>
