@@ -33,12 +33,12 @@ const Index = () => {
   useEffect(() => {
     if (fireData && !isLoadingFireData) {
       if (fireData.incidents.length > 0) {
-        toast.info(`${fireData.incidents.length} incêndios em Portugal`, {
+        toast.info(`${fireData.incidents.length} ocorrências em Portugal`, {
           icon: <Flame className="h-4 w-4 text-fire" />,
         });
       } else {
         toast.success(
-          "Não existem incêndios ativos em Portugal neste momento",
+          "Não existem ocorrências ativas em Portugal neste momento",
           {
             icon: <Flame className="h-4 w-4 text-green-500" />,
           }
