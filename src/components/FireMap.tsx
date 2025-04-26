@@ -1,3 +1,4 @@
+
 import { useEffect } from 'react';
 import { MapContainer, TileLayer, Marker, Popup, CircleMarker, useMap } from 'react-leaflet';
 import { getRiskColor, getRiskTranslation } from '@/hooks/useFireData';
@@ -80,8 +81,7 @@ const FireMap = ({ incidents, riskLevels }: FireMapProps) => {
     <div className="h-[70vh] w-full rounded-md overflow-hidden shadow-md border">
       <MapContainer 
         className="h-full"
-        zoom={DEFAULT_ZOOM}
-        bounds={PORTUGAL_BOUNDS}
+        center={DEFAULT_CENTER}
         minZoom={6}
         maxZoom={13}
       >
@@ -97,15 +97,17 @@ const FireMap = ({ incidents, riskLevels }: FireMapProps) => {
             center={getDistrictCoordinates(risk.district)}
             pathOptions={{
               fillColor: getRiskColor(risk.level),
-              color: getRiskColor(risk.level),
-              fillOpacity: 0.3
+              color: 'white',
+              weight: 1,
+              fillOpacity: 0.6,
+              opacity: 0.8
             }}
-            radius={30}
+            radius={20}
           >
             <Popup>
               <div className="font-medium">{risk.district}</div>
               <div className="text-sm">
-                Temperatura: <span className="font-bold">{risk.temperature}°C</span>
+                Temperatura: <span className="font-bold">{risk.temperature ? risk.temperature : '?'}°C</span>
               </div>
               <div className="text-sm">
                 Risco: <span className="font-bold">{getRiskTranslation(risk.level)}</span>
