@@ -69,7 +69,7 @@ npm run build
 npm run preview
 ```
 
-## 🌍 Data Sources
+## 🌍 Data Sources(APIs)
 
 - [fogos.pt API](https://api.fogos.pt/) — Real-time fire incidents
 - [IPMA Open Data](https://api.ipma.pt/) — Weather and risk data
