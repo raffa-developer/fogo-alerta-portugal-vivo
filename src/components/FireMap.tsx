@@ -33,8 +33,30 @@ const fireIcon = new L.Icon({
   shadowSize: [41, 41],
 });
 
-const DEFAULT_CENTER: [number, number] = [39.5, -8.0];
-const DEFAULT_ZOOM = 7;
+const callIcon = new L.Icon({
+  iconUrl: "https://cdn-icons-png.flaticon.com/512/724/724664.png", // Ícone de telefone azul
+  iconRetinaUrl: "https://cdn-icons-png.flaticon.com/512/724/724664.png",
+  shadowUrl:
+    "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png",
+  iconSize: [25, 30],
+  iconAnchor: [12, 41],
+  popupAnchor: [1, -34],
+  shadowSize: [41, 41],
+});
+
+const extinguishedIcon = new L.Icon({
+  iconUrl: "https://cdn-icons-png.flaticon.com/512/4580/4580327.png", // Ícone de check verde
+  iconRetinaUrl: "https://cdn-icons-png.flaticon.com/512/4580/4580327.png",
+  shadowUrl:
+    "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png",
+  iconSize: [25, 30],
+  iconAnchor: [12, 41],
+  popupAnchor: [1, -34],
+  shadowSize: [41, 41],
+});
+
+const DEFAULT_CENTER: [number, number] = [38.5, -8.0];
+const DEFAULT_ZOOM = 6;
 
 // Define proper TypeScript interfaces
 interface Resources {
@@ -108,6 +130,19 @@ const FireMap = ({ incidents, riskLevels }: FireMapProps) => {
       "Viana do Castelo": [41.6918, -8.8344],
       "Vila Real": [41.3058, -7.7449],
       Viseu: [40.6566, -7.9125],
+      // Ilhas
+      Açores: [37.7412, -25.6756],
+      Madeira: [32.7607, -16.9595],
+      "Porto Santo": [33.0607, -16.3375],
+      "São Miguel": [37.7412, -25.6756],
+      Terceira: [38.7223, -27.2173],
+      Pico: [38.4683, -28.3113],
+      Faial: [38.5267, -28.6244],
+      "São Jorge": [38.6357, -28.0294],
+      Graciosa: [39.0525, -28.0119],
+      Flores: [39.4553, -31.1994],
+      Corvo: [39.6717, -31.1133],
+      "Santa Maria": [36.9744, -25.1706],
     };
 
     const coords = districtCoords[district];
@@ -118,15 +153,22 @@ const FireMap = ({ incidents, riskLevels }: FireMapProps) => {
     return coords;
   };
 
+  const getIncidentIcon = (incident: FireIncident): L.Icon => {
+    // Se estiver extinto, mostra o ícone de check verde
+    if (incident.status === "extinguished") {
+      return extinguishedIcon;
+    }
+    // Se não tiver operacionais, mostra o ícone de telefone
+    if (incident.resources.men === 0) {
+      return callIcon;
+    }
+    // Se tiver operacionais, mostra o ícone de fogo
+    return fireIcon;
+  };
+
   return (
     <div className="h-[70vh] w-full rounded-md overflow-hidden shadow-md border">
-      <MapContainer
-        className="h-full w-full"
-        //center={DEFAULT_CENTER}
-        //zoom={DEFAULT_ZOOM}
-        //minZoom={3} // Permite zoom out para ver o mundo todo
-        //maxZoom={18} // Aumenta o zoom máximo para mais detalhes
-      >
+      <MapContainer className="h-full w-full">
         <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
         <MapBounds />
 
@@ -167,7 +209,7 @@ const FireMap = ({ incidents, riskLevels }: FireMapProps) => {
           <Marker
             key={incident.id}
             position={[incident.lat, incident.lng]}
-            icon={fireIcon as L.Icon}
+            icon={getIncidentIcon(incident)}
           >
             <Popup>
               <div className="font-bold">{incident.location}</div>

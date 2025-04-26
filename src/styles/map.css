@@ -1,0 +1,71 @@
+/* Estilos para o popup do mapa */
+.custom-popup .leaflet-popup-content-wrapper {
+  padding: 0;
+  border-radius: 8px;
+  box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+}
+
+.custom-popup .leaflet-popup-content {
+  margin: 0;
+  padding: 1rem;
+}
+
+.custom-popup .leaflet-popup-tip {
+  background: white;
+}
+
+/* Estilos para os recursos */
+.resource-card {
+  background-color: rgb(243 244 246);
+  border-radius: 6px;
+  padding: 0.5rem;
+  text-align: center;
+  transition: all 0.2s ease-in-out;
+}
+
+.resource-card:hover {
+  background-color: rgb(229 231 235);
+  transform: translateY(-1px);
+}
+
+/* Estilos para o estado do incêndio */
+.status-active {
+  color: rgb(220 38 38);
+}
+
+.status-contained {
+  color: rgb(249 115 22);
+}
+
+.status-extinguished {
+  color: rgb(22 163 74);
+}
+
+/* Estilos para o título do popup */
+.popup-title {
+  font-size: 1.125rem;
+  font-weight: 700;
+  color: rgb(220 38 38);
+  margin-bottom: 0.5rem;
+}
+
+/* Estilos para as labels */
+.popup-label {
+  color: rgb(107 114 128);
+  font-size: 0.875rem;
+}
+
+/* Estilos para os valores */
+.popup-value {
+  font-weight: 500;
+  color: rgb(17 24 39);
+}
+
+/* Estilos para a fonte dos dados */
+.data-source {
+  font-size: 0.75rem;
+  color: rgb(107 114 128);
+  text-align: center;
+  padding-top: 0.5rem;
+  border-top: 1px solid rgb(229 231 235);
+} 

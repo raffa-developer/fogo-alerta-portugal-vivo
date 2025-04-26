@@ -1,5 +1,5 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Flame, X } from "lucide-react";
+import { Flame, Phone, CheckCircle } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { format } from "date-fns";
 import { pt } from "date-fns/locale";
@@ -16,13 +16,21 @@ interface FireIncident {
     terrain: number;
     aerial: number;
   };
+  natureza?: string;
+  freguesia?: string;
+  concelho?: string;
+  operacionais?: number;
+  meiosTerrestres?: number;
+  meiosAereos?: number;
+  estado?: string;
+  dataAtualizacao?: string;
+  origem?: string;
+  observacoes?: string;
 }
 
 interface ActiveFiresListProps {
   incidents: FireIncident[];
 }
-
-type IncidentStatus = "active" | "contained" | "extinguished";
 
 const ActiveFiresList = ({ incidents }: ActiveFiresListProps) => {
   const [showAll, setShowAll] = useState(false);
@@ -47,7 +55,9 @@ const ActiveFiresList = ({ incidents }: ActiveFiresListProps) => {
     : sortedIncidents.slice(0, 5);
 
   // Function to translate status to Portuguese
-  const translateStatus = (status: IncidentStatus): string => {
+  const translateStatus = (
+    status: "active" | "contained" | "extinguished"
+  ): string => {
     switch (status) {
       case "active":
         return "Ativo";
@@ -106,6 +116,16 @@ const ActiveFiresList = ({ incidents }: ActiveFiresListProps) => {
     };
   }, [showPopup]);
 
+  const getIncidentIcon = (incident: FireIncident) => {
+    if (incident.status === "extinguished") {
+      return <CheckCircle className="h-5 w-5 text-green-600" />;
+    }
+    if (incident.resources.men === 0) {
+      return <Phone className="h-5 w-5 text-blue-600" />;
+    }
+    return <Flame className="h-5 w-5 text-red-600" />;
+  };
+
   const renderIncidentList = () => {
     if (sortedIncidents.length === 0) {
       return (
@@ -128,7 +148,10 @@ const ActiveFiresList = ({ incidents }: ActiveFiresListProps) => {
               onClick={() => handleIncidentClick(incident)}
             >
               <div className="flex items-center justify-between mb-1">
-                <span className="font-medium">{incident.location}</span>
+                <div className="flex items-center gap-2">
+                  {getIncidentIcon(incident)}
+                  <span className="font-medium">{incident.location}</span>
+                </div>
                 <Badge
                   variant={
                     incident.status === "active"
@@ -149,7 +172,7 @@ const ActiveFiresList = ({ incidents }: ActiveFiresListProps) => {
                     : "Data inválida"}
                 </span>
               </div>
-              <div className="mt-1 text-sm">
+              <div className="mt-2 text-sm">
                 <span className="text-muted-foreground">Meios: </span>
                 <span className="font-medium">
                   {incident.resources.men} operacionais
@@ -193,108 +216,145 @@ const ActiveFiresList = ({ incidents }: ActiveFiresListProps) => {
     );
   };
 
-  const renderPopup = () => {
-    if (!showPopup || !selectedIncident) return null;
-
-    return (
-      <div
-        className="fixed inset-0 bg-black/50 flex items-end sm:items-center justify-center z-50"
-        onClick={closePopup}
-      >
-        <div
-          className="bg-background rounded-t-lg sm:rounded-lg shadow-lg max-w-md w-full mx-4 sm:mb-0 mb-0"
-          onClick={(e) => e.stopPropagation()} // Prevent closing when clicking inside popup
-        >
-          <div className="p-4 border-b flex justify-between items-center">
-            <h3 className="text-lg font-semibold">
-              {selectedIncident.location}
-            </h3>
-            <button
-              title="btnPopup"
-              onClick={closePopup}
-              className="text-muted-foreground hover:text-foreground"
-            >
-              <X className="h-5 w-5" />
-            </button>
-          </div>
-          <div className="p-4">
-            <div className="grid grid-cols-2 gap-4 mb-4">
-              <div>
-                <p className="text-sm text-muted-foreground">Distrito</p>
-                <p className="font-medium">{selectedIncident.district}</p>
-              </div>
-              <div>
-                <p className="text-sm text-muted-foreground">Estado</p>
-                <p className="font-medium">
-                  {translateStatus(selectedIncident.status)}
-                </p>
-              </div>
-              <div>
-                <p className="text-sm text-muted-foreground">Início</p>
-                <p className="font-medium">
-                  {format(
-                    new Date(selectedIncident.start),
-                    "dd/MM/yyyy HH:mm",
-                    { locale: pt }
-                  )}
-                </p>
-              </div>
-              <div>
-                <p className="text-sm text-muted-foreground">Duração</p>
-                <p className="font-medium">
-                  {calculateDuration(selectedIncident.start)}
-                </p>
-              </div>
-            </div>
-
-            <div className="mb-4">
-              <p className="text-sm text-muted-foreground mb-2">Recursos</p>
-              <div className="grid grid-cols-3 gap-2">
-                <div className="bg-muted rounded p-3 text-center">
-                  <p className="text-2xl font-bold">
-                    {selectedIncident.resources.men}
-                  </p>
-                  <p className="text-xs text-muted-foreground">Operacionais</p>
-                </div>
-                <div className="bg-muted rounded p-3 text-center">
-                  <p className="text-2xl font-bold">
-                    {selectedIncident.resources.terrain}
-                  </p>
-                  <p className="text-xs text-muted-foreground">Terrestres</p>
-                </div>
-                <div className="bg-muted rounded p-3 text-center">
-                  <p className="text-2xl font-bold">
-                    {selectedIncident.resources.aerial}
-                  </p>
-                  <p className="text-xs text-muted-foreground">Aéreos</p>
-                </div>
-              </div>
-            </div>
-
-            <div className="text-center mt-4">
-              <button
-                onClick={closePopup}
-                className="bg-primary text-primary-foreground px-4 py-2 rounded hover:bg-primary/90"
-              >
-                Fechar
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
-    );
-  };
-
   return (
     <Card>
       <CardHeader className="pb-2">
         <div className="flex items-center space-x-2">
           <Flame className="h-5 w-5 text-fire" />
-          <CardTitle className="text-lg">Incêndios Ativos</CardTitle>
+          <CardTitle className="text-lg">Lista de Ocorrências</CardTitle>
         </div>
       </CardHeader>
       <CardContent className="p-0">{renderIncidentList()}</CardContent>
-      {renderPopup()}
+      {showPopup && selectedIncident && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+          <div className="bg-background rounded-lg shadow-lg max-w-lg w-full mx-4">
+            <div className="p-4">
+              <div className="grid grid-cols-2 gap-4 mb-4">
+                <div>
+                  <p className="text-sm text-muted-foreground">Distrito</p>
+                  <p className="font-medium">{selectedIncident.district}</p>
+                </div>
+                <div>
+                  <p className="text-sm text-muted-foreground">Estado</p>
+                  <p
+                    className={`font-medium ${
+                      selectedIncident.status === "active"
+                        ? "text-red-600"
+                        : selectedIncident.status === "contained"
+                        ? "text-orange-500"
+                        : "text-green-600"
+                    }`}
+                  >
+                    {translateStatus(selectedIncident.status)}
+                  </p>
+                </div>
+                <div>
+                  <p className="text-sm text-muted-foreground">Início</p>
+                  <p className="font-medium">
+                    {format(
+                      new Date(selectedIncident.start),
+                      "dd/MM/yyyy HH:mm",
+                      { locale: pt }
+                    )}
+                  </p>
+                </div>
+                <div>
+                  <p className="text-sm text-muted-foreground">Duração</p>
+                  <p className="font-medium">
+                    {calculateDuration(selectedIncident.start)}
+                  </p>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4 mb-4">
+                <div>
+                  <p className="text-sm text-muted-foreground">Freguesia</p>
+                  <p className="font-medium">
+                    {selectedIncident.freguesia || "Não especificada"}
+                  </p>
+                </div>
+                <div>
+                  <p className="text-sm text-muted-foreground">Concelho</p>
+                  <p className="font-medium">
+                    {selectedIncident.concelho || "Não especificado"}
+                  </p>
+                </div>
+                <div>
+                  <p className="text-sm text-muted-foreground">Natureza</p>
+                  <p className="font-medium">
+                    {selectedIncident.natureza || "Não especificada"}
+                  </p>
+                </div>
+                <div>
+                  <p className="text-sm text-muted-foreground">Origem</p>
+                  <p className="font-medium">
+                    {selectedIncident.origem || "Não especificada"}
+                  </p>
+                </div>
+              </div>
+
+              <div className="mb-4">
+                <p className="text-sm text-muted-foreground mb-2">
+                  Recursos Mobilizados
+                </p>
+                <div className="grid grid-cols-3 gap-2">
+                  <div className="bg-muted rounded p-3 text-center hover:bg-muted/80 transition-colors">
+                    <p className="text-2xl font-bold">
+                      {selectedIncident.resources.men}
+                    </p>
+                    <p className="text-xs text-muted-foreground">
+                      Operacionais
+                    </p>
+                  </div>
+                  <div className="bg-muted rounded p-3 text-center hover:bg-muted/80 transition-colors">
+                    <p className="text-2xl font-bold">
+                      {selectedIncident.resources.terrain}
+                    </p>
+                    <p className="text-xs text-muted-foreground">Terrestres</p>
+                  </div>
+                  <div className="bg-muted rounded p-3 text-center hover:bg-muted/80 transition-colors">
+                    <p className="text-2xl font-bold">
+                      {selectedIncident.resources.aerial}
+                    </p>
+                    <p className="text-xs text-muted-foreground">Aéreos</p>
+                  </div>
+                </div>
+              </div>
+
+              {selectedIncident.observacoes && (
+                <div className="mb-4">
+                  <p className="text-sm text-muted-foreground mb-2">
+                    Observações
+                  </p>
+                  <p className="text-sm bg-muted rounded p-3">
+                    {selectedIncident.observacoes}
+                  </p>
+                </div>
+              )}
+
+              {selectedIncident.dataAtualizacao && (
+                <div className="text-xs text-muted-foreground text-center mb-4">
+                  Última atualização:{" "}
+                  {format(
+                    new Date(selectedIncident.dataAtualizacao),
+                    "dd/MM/yyyy HH:mm",
+                    { locale: pt }
+                  )}
+                </div>
+              )}
+
+              <div className="text-center mt-4">
+                <button
+                  onClick={closePopup}
+                  className="bg-primary text-primary-foreground px-4 py-2 rounded hover:bg-primary/90 transition-colors"
+                >
+                  Fechar
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </Card>
   );
 };

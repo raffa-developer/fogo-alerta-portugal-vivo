@@ -150,6 +150,19 @@ function getLocationNameFromIPMA(globalIdLocal: number): string {
     1160900: "Viana do Castelo",
     1171400: "Vila Real",
     1182300: "Viseu",
+    // Ilhas
+    2310100: "Açores",
+    2310200: "Madeira",
+    2310300: "Porto Santo",
+    2310400: "São Miguel",
+    2310500: "Terceira",
+    2310600: "Pico",
+    2310700: "Faial",
+    2310800: "São Jorge",
+    2310900: "Graciosa",
+    2311000: "Flores",
+    2311100: "Corvo",
+    2311200: "Santa Maria",
   };
 
   return locationMap[globalIdLocal] || `Localidade ${globalIdLocal}`;

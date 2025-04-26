@@ -1,99 +1,91 @@
+# Fogo Alerta Portugal
 
-# Wildfire Risk Monitoring Project
-
-## Getting Started with Git
-
-### 1. Initialize Git Repository
-```sh
-git init
-```
-
-### 2. Add Your GitHub Repository as Remote
-```sh
-git remote add origin https://github.com/YOUR_USERNAME/YOUR_REPOSITORY_NAME.git
-```
-
-### 3. Add Files to Git
-```sh
-# Add all files
-git add .
-
-# Or add specific files
-git add src/ public/ index.html
-```
-
-### 4. Create Initial Commit
-```sh
-git commit -m "Initial commit: Wildfire Risk Monitoring Project"
-```
-
-### 5. Push to GitHub
-```sh
-# Push to main branch
-git push -u origin main
-```
-
-## Project Setup After Cloning
-
-```sh
-# Clone the repository
-git clone https://github.com/YOUR_USERNAME/YOUR_REPOSITORY_NAME.git
-
-# Navigate to project directory
-cd wildfire-risk-monitoring
-
-# Install dependencies
-npm install
-
-# Start development server
-npm run dev
-```
-
-## Prerequisites
-
-- Node.js (v18+ recommended)
-- npm or yarn
-- Git
-
-## Project Technologies
-
-- React with TypeScript
-- Leaflet Maps for interactive mapping
-- Tailwind CSS for styling
-- Shadcn UI components
-- React Query for data fetching
+A real-time wildfire monitoring system for Portugal, providing comprehensive information about active fires, risk levels, and weather conditions.
 
 ## Features
 
-- Real-time wildfire monitoring
-- Risk level visualization by district
-- Interactive map with incident markers
-- Weather information display
-- Responsive design
+### Real-time Fire Monitoring
 
-## Development
+- Live tracking of active wildfires across Portugal
+- Detailed incident information including:
+  - Location and district
+  - Status (Active, Contained, Extinguished)
+  - Resources deployed (operational personnel, ground vehicles, aerial means)
+  - Start time and duration
+  - Nature and origin of the incident
 
-To start developing:
+### Visual Indicators
 
-```sh
+- Dynamic icons based on incident status:
+  - 🔥 Red fire icon for active fires with deployed resources
+  - 📞 Blue phone icon for initial calls without resources
+  - ✅ Green check icon for extinguished fires
+- Color-coded risk levels for each district
+- Interactive map with detailed popups
+
+### Weather and Risk Information
+
+- Real-time weather conditions
+- District-specific risk levels
+- Temperature monitoring
+- Humidity and wind speed data
+
+### User Interface
+
+- Responsive design for all devices
+- Interactive map with zoom and pan capabilities
+- Sortable list of active incidents
+- Detailed incident information in popups
+- Real-time updates
+
+## Technical Stack
+
+- React with TypeScript
+- Leaflet for interactive maps
+- Tailwind CSS for styling
+- React Query for data fetching
+- OpenStreetMap for base maps
+- IPMA API for weather data
+- Fogos.pt API for fire incident data
+
+## Getting Started
+
+1. Clone the repository:
+
+```bash
+git clone https://github.com/yourusername/fogo-alerta-portugal.git
+```
+
+2. Install dependencies:
+
+```bash
+cd fogo-alerta-portugal
+npm install
+```
+
+3. Start the development server:
+
+```bash
 npm run dev
 ```
 
-The application will be available at `http://localhost:8080`
-
-## Deployment
-
-Deploy through your preferred hosting platform. Make sure to:
-
-1. Build the project: `npm run build`
-2. Test the build locally: `npm run preview`
-3. Deploy the `dist` folder to your hosting service
+4. Open [http://localhost:3000](http://localhost:3000) in your browser
 
 ## Contributing
 
-1. Fork the repository
-2. Create your feature branch: `git checkout -b feature/AmazingFeature`
-3. Commit your changes: `git commit -m 'Add some AmazingFeature'`
-4. Push to the branch: `git push origin feature/AmazingFeature`
-5. Open a Pull Request
+Contributions are welcome! Please feel free to submit a Pull Request.
 
+## License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+## Acknowledgments
+
+- Data provided by [Fogos.pt](https://fogos.pt)
+- Weather data from [IPMA](https://www.ipma.pt)
+- Base maps from [OpenStreetMap](https://www.openstreetmap.org)
+
+---
+
+**Author:** Rafa  
+**Project:** Fogo Alerta Portugal

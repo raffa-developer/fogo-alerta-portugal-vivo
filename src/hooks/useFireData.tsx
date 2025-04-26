@@ -9,12 +9,21 @@ interface FireIncident {
   lng: number;
   start: string;
   status: "active" | "contained" | "extinguished";
-  type: string;
   resources: {
     men: number;
     terrain: number;
     aerial: number;
   };
+  natureza: string | undefined;
+  freguesia: string | undefined;
+  concelho: string | undefined;
+  operacionais: number;
+  meiosTerrestres: number;
+  meiosAereos: number;
+  estado: string;
+  dataAtualizacao: string;
+  origem: string;
+  observacoes: string;
 }
 
 interface RiskLevel {
@@ -56,6 +65,15 @@ interface ApiIncident {
   man?: string | number;
   terrain?: string | number;
   aerial?: string | number;
+  freguesia?: string;
+  concelho?: string;
+  dataAtualizacao?: string;
+  origem?: string;
+  observacoes?: string;
+  estado?: string;
+  operacionais?: string | number;
+  meiosTerrestres?: string | number;
+  meiosAereos?: string | number;
 }
 
 interface ApiIncidentResponse {
@@ -111,6 +129,40 @@ const mapApiStatus = (
 
 //API DO TEMPO
 const fetchFireRiskData = async (): Promise<RiskLevel[]> => {
+  const districts = [
+    "Aveiro",
+    "Beja",
+    "Braga",
+    "Bragança",
+    "Castelo Branco",
+    "Coimbra",
+    "Évora",
+    "Faro",
+    "Guarda",
+    "Leiria",
+    "Lisboa",
+    "Portalegre",
+    "Porto",
+    "Santarém",
+    "Setúbal",
+    "Viana do Castelo",
+    "Vila Real",
+    "Viseu",
+    // Ilhas
+    "Açores",
+    "Madeira",
+    "Porto Santo",
+    "São Miguel",
+    "Terceira",
+    "Pico",
+    "Faial",
+    "São Jorge",
+    "Graciosa",
+    "Flores",
+    "Corvo",
+    "Santa Maria",
+  ];
+
   try {
     const response = await fetch(
       "https://api.ipma.pt/open-data/forecast/meteorology/cities/daily/hp-daily-forecast-day0.json"
@@ -120,27 +172,6 @@ const fetchFireRiskData = async (): Promise<RiskLevel[]> => {
     }
 
     const weatherData = (await response.json()) as IPMAWeatherData;
-
-    const districts = [
-      "Aveiro",
-      "Beja",
-      "Braga",
-      "Bragança",
-      "Castelo Branco",
-      "Coimbra",
-      "Évora",
-      "Faro",
-      "Guarda",
-      "Leiria",
-      "Lisboa",
-      "Portalegre",
-      "Porto",
-      "Santarém",
-      "Setúbal",
-      "Viana do Castelo",
-      "Vila Real",
-      "Viseu",
-    ];
 
     const locationMap: Record<number, string> = {
       1010500: "Aveiro",
@@ -161,6 +192,19 @@ const fetchFireRiskData = async (): Promise<RiskLevel[]> => {
       1160900: "Viana do Castelo",
       1171400: "Vila Real",
       1182300: "Viseu",
+      // Ilhas
+      2310100: "Açores",
+      2310200: "Madeira",
+      2310300: "Porto Santo",
+      2310400: "São Miguel",
+      2310500: "Terceira",
+      2310600: "Pico",
+      2310700: "Faial",
+      2310800: "São Jorge",
+      2310900: "Graciosa",
+      2311000: "Flores",
+      2311100: "Corvo",
+      2311200: "Santa Maria",
     };
 
     const riskLevels: RiskLevel[] = districts.map((district) => {
@@ -194,20 +238,24 @@ const fetchFireRiskData = async (): Promise<RiskLevel[]> => {
         };
       }
 
+      // Se não encontrar dados para o distrito, retorna um valor padrão
       return {
         district,
         level: "moderate",
-        temperature: undefined,
+        temperature: 20, // Temperatura padrão
       };
     });
 
     return riskLevels;
   } catch (error) {
     console.error("Error fetching fire risk data:", error);
+    toast.error("Erro ao carregar dados de risco de incêndio");
 
-    return createDefaultRiskLevels().map((risk) => ({
-      ...risk,
-      temperature: undefined,
+    // Em caso de erro, retorna níveis de risco padrão com temperatura
+    return districts.map((district) => ({
+      district,
+      level: "moderate",
+      temperature: 20, // Temperatura padrão
     }));
   }
 };
@@ -320,6 +368,7 @@ const createDefaultRiskLevels = (): RiskLevel[] => {
   });
 };
 
+//API FOGOS.PT
 const fetchFireData = async (): Promise<FireData> => {
   try {
     const [incidentsResponse, riskLevels] = await Promise.all([
@@ -340,12 +389,21 @@ const fetchFireData = async (): Promise<FireData> => {
             lng: parseFloat(String(incident.lng)) || 0,
             start: createValidDate(incident),
             status: mapApiStatus(incident.status),
-            type: incident.natureza || "Unknown",
             resources: {
               men: parseInt(String(incident.man)) || 0,
               terrain: parseInt(String(incident.terrain)) || 0,
               aerial: parseInt(String(incident.aerial)) || 0,
             },
+            natureza: incident.natureza,
+            freguesia: incident.freguesia,
+            concelho: incident.concelho,
+            operacionais: parseInt(String(incident.man)) || 0,
+            meiosTerrestres: parseInt(String(incident.terrain)) || 0,
+            meiosAereos: parseInt(String(incident.aerial)) || 0,
+            estado: incident.status,
+            dataAtualizacao: incident.dataAtualizacao,
+            origem: incident.origem,
+            observacoes: incident.observacoes,
           }))
         : [];
 
