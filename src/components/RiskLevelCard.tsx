@@ -1,23 +1,34 @@
-
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { getRiskColor, getRiskTranslation } from "@/hooks/useFireData";
 
 interface RiskLevelCardProps {
   district: string;
-  level: 'low' | 'moderate' | 'high' | 'very-high' | 'extreme';
+  level: "low" | "moderate" | "high" | "very-high" | "extreme";
 }
 
 const RiskLevelCard = ({ district, level }: RiskLevelCardProps) => {
   // Calculate progress value based on risk level
   const getRiskProgress = (level: string): number => {
-    switch(level) {
-      case 'low': return 20;
-      case 'moderate': return 40;
-      case 'high': return 60;
-      case 'very-high': return 80;
-      case 'extreme': return 100;
-      default: return 0;
+    switch (level) {
+      case "low":
+        return 20;
+      case "moderate":
+        return 40;
+      case "high":
+        return 60;
+      case "very-high":
+        return 80;
+      case "extreme":
+        return 100;
+      default:
+        return 0;
     }
   };
 
@@ -30,20 +41,17 @@ const RiskLevelCard = ({ district, level }: RiskLevelCardProps) => {
       <CardContent>
         <div className="flex items-center justify-between mb-2">
           <p className="text-sm font-medium">Nível</p>
-          <p 
-            className="text-sm font-bold"
-            style={{ color: getRiskColor(level) }}
-          >
-            {getRiskTranslation(level)}
-          </p>
+          <p className="text-sm font-bold">{getRiskTranslation(level)}</p>
         </div>
-        <Progress 
-          value={getRiskProgress(level)} 
+        <Progress
+          value={getRiskProgress(level)}
           className="h-2 bg-gradient-to-r from-[#64B6AC] via-[#FFD166] via-[#F39237] via-[#EA526F] to-[#D62828]"
-          style={{ 
-            '--tw-gradient-from': '#64B6AC',
-            '--tw-gradient-to': getRiskColor(level)
-          } as React.CSSProperties}
+          style={
+            {
+              "--tw-gradient-from": "#64B6AC",
+              "--tw-gradient-to": getRiskColor(level),
+            } as React.CSSProperties
+          }
         />
       </CardContent>
     </Card>
