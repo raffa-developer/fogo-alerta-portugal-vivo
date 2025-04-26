@@ -1,3 +1,4 @@
+
 import { useEffect } from 'react';
 import { MapContainer, TileLayer, Marker, Popup, CircleMarker, useMap } from 'react-leaflet';
 import { getRiskColor, getRiskTranslation } from '@/hooks/useFireData';
@@ -80,8 +81,8 @@ const FireMap = ({ incidents, riskLevels }: FireMapProps) => {
     <div className="h-[70vh] w-full rounded-md overflow-hidden shadow-md border">
       <MapContainer 
         className="h-full"
+        center={DEFAULT_CENTER}
         bounds={PORTUGAL_BOUNDS}
-        zoom={DEFAULT_ZOOM}
         minZoom={6}
         maxZoom={13}
       >

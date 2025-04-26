@@ -75,19 +75,199 @@ const mapApiStatus = (status: string): 'active' | 'contained' | 'extinguished' =
   }
 };
 
+// Function to fetch fire risk data from IPMA API
+const fetchFireRiskData = async (): Promise<RiskLevel[]> => {
+  try {
+    // 1. First, we fetch the weather data from IPMA which we'll use to calculate fire risk
+    const response = await fetch('https://api.ipma.pt/open-data/forecast/meteorology/cities/daily/hp-daily-forecast-day0.json');
+    if (!response.ok) {
+      throw new Error('Failed to fetch IPMA data');
+    }
+    
+    const weatherData = await response.json();
+    
+    // 2. Define the districts we're interested in
+    const districts = [
+      'Aveiro', 'Beja', 'Braga', 'Bragança', 'Castelo Branco',
+      'Coimbra', 'Évora', 'Faro', 'Guarda', 'Leiria',
+      'Lisboa', 'Portalegre', 'Porto', 'Santarém', 'Setúbal',
+      'Viana do Castelo', 'Vila Real', 'Viseu'
+    ];
+    
+    // 3. Create mapping between IPMA location IDs and district names
+    const locationMap: Record<number, string> = {
+      1010500: 'Aveiro',
+      1020500: 'Beja',
+      1030300: 'Braga',
+      1040200: 'Bragança',
+      1050200: 'Castelo Branco',
+      1060300: 'Coimbra',
+      1070500: 'Évora',
+      1080500: 'Faro',
+      1090700: 'Guarda',
+      1100900: 'Leiria',
+      1110600: 'Lisboa',
+      1121400: 'Portalegre',
+      1131200: 'Porto',
+      1141600: 'Santarém',
+      1151200: 'Setúbal',
+      1160900: 'Viana do Castelo',
+      1171400: 'Vila Real',
+      1182300: 'Viseu'
+    };
+    
+    // 4. Calculate fire risk for each district based on their weather conditions
+    const riskLevels: RiskLevel[] = districts.map(district => {
+      // Find the weather data for this district
+      const districtWeatherData = weatherData.data.find((location: any) => 
+        locationMap[location.globalIdLocal] === district
+      );
+      
+      if (districtWeatherData) {
+        // Calculate fire risk based on temperature, humidity, wind speed and precipitation
+        const tempRisk = calculateTemperatureRisk(districtWeatherData.tMax);
+        const windRisk = calculateWindRisk(districtWeatherData.classWindSpeed);
+        const precipRisk = calculatePrecipitationRisk(Number(districtWeatherData.precipitaProb || 0));
+        
+        // Humidity is not directly provided by IPMA, so we estimate it based on other factors
+        const estimatedHumidity = estimateHumidity(districtWeatherData.idWeatherType, Number(districtWeatherData.precipitaProb || 0));
+        const humidityRisk = calculateHumidityRisk(estimatedHumidity);
+        
+        // Calculate final risk score (weighted average)
+        const riskScore = (tempRisk * 0.4) + (humidityRisk * 0.3) + (windRisk * 0.2) + (precipRisk * 0.1);
+        
+        // Determine risk level based on score
+        return {
+          district,
+          level: getRiskLevelFromScore(riskScore)
+        };
+      }
+      
+      // If no weather data found for this district, default to moderate risk
+      return {
+        district,
+        level: 'moderate'
+      };
+    });
+    
+    return riskLevels;
+  } catch (error) {
+    console.error('Error fetching fire risk data:', error);
+    
+    // In case of API failure, fall back to the default risk levels
+    return createDefaultRiskLevels();
+  }
+};
+
+// Helper function to calculate risk based on temperature
+// Higher temperature = higher risk
+const calculateTemperatureRisk = (temperature: number): number => {
+  if (temperature < 15) return 0.2;
+  if (temperature < 20) return 0.4;
+  if (temperature < 25) return 0.6;
+  if (temperature < 30) return 0.8;
+  return 1.0;
+};
+
+// Helper function to calculate risk based on wind speed class
+// Higher wind speed = higher risk
+const calculateWindRisk = (classWindSpeed: number): number => {
+  if (classWindSpeed === 1) return 0.3;
+  if (classWindSpeed === 2) return 0.6;
+  if (classWindSpeed === 3) return 0.8;
+  if (classWindSpeed === 4) return 1.0;
+  return 0.4; // default
+};
+
+// Helper function to calculate risk based on precipitation probability
+// Higher precipitation probability = lower risk
+const calculatePrecipitationRisk = (precipProb: number): number => {
+  return Math.max(0, 1 - (precipProb / 100));
+};
+
+// Helper function to calculate risk based on humidity
+// Lower humidity = higher risk
+const calculateHumidityRisk = (humidity: number): number => {
+  if (humidity > 80) return 0.2;
+  if (humidity > 60) return 0.4;
+  if (humidity > 45) return 0.6;
+  if (humidity > 30) return 0.8;
+  return 1.0;
+};
+
+// Helper function to estimate humidity based on weather type and precipitation
+const estimateHumidity = (weatherType: number, precipProb: number): number => {
+  // Weather types: 1 (clear), 2-3 (partly cloudy), 4-9 (cloudy/rainy), 10+ (thunderstorm)
+  let baseHumidity = 50;  // Default humidity
+  
+  if (weatherType >= 9) {
+    // Heavy rain or thunderstorms
+    baseHumidity = 85;
+  } else if (weatherType >= 4) {
+    // Cloudy or light rain
+    baseHumidity = 70;
+  } else if (weatherType >= 2) {
+    // Partly cloudy
+    baseHumidity = 60;
+  } else {
+    // Clear sky
+    baseHumidity = 45;
+  }
+  
+  // Adjust based on precipitation probability
+  const precipFactor = precipProb / 100;
+  return Math.min(95, Math.round(baseHumidity + (precipFactor * 20)));
+};
+
+// Helper function to convert risk score to risk level
+const getRiskLevelFromScore = (score: number): 'low' | 'moderate' | 'high' | 'very-high' | 'extreme' => {
+  if (score < 0.25) return 'low';
+  if (score < 0.45) return 'moderate';
+  if (score < 0.65) return 'high';
+  if (score < 0.85) return 'very-high';
+  return 'extreme';
+};
+
+// Create default risk levels in case API fails
+const createDefaultRiskLevels = (): RiskLevel[] => {
+  const districts = [
+    'Aveiro', 'Beja', 'Braga', 'Bragança', 'Castelo Branco',
+    'Coimbra', 'Évora', 'Faro', 'Guarda', 'Leiria',
+    'Lisboa', 'Portalegre', 'Porto', 'Santarém', 'Setúbal',
+    'Viana do Castelo', 'Vila Real', 'Viseu'
+  ];
+  
+  return districts.map(district => {
+    const levels: ('low' | 'moderate' | 'high' | 'very-high' | 'extreme')[] = 
+      ['low', 'moderate', 'high', 'very-high', 'extreme'];
+    
+    const hash = district.split('').reduce((a, b) => a + b.charCodeAt(0), 0);
+    const today = new Date();
+    const dayOfYear = Math.floor((today.getTime() - new Date(today.getFullYear(), 0, 0).getTime()) / (1000 * 60 * 60 * 24));
+    
+    const levelIndex = Math.floor((hash + dayOfYear) % levels.length);
+    
+    return {
+      district,
+      level: levels[levelIndex]
+    };
+  });
+};
+
 // Function to fetch fire data from ProCiv API
 const fetchFireData = async (): Promise<FireData> => {
   try {
-    const response = await fetch('https://api.fogos.pt/v2/incidents/active');
-    if (!response.ok) {
-      throw new Error('Failed to fetch fire data');
-    }
+    const [incidentsResponse, riskLevels] = await Promise.all([
+      fetch('https://api.fogos.pt/v2/incidents/active').then(res => {
+        if (!res.ok) throw new Error('Failed to fetch fire data');
+        return res.json();
+      }),
+      fetchFireRiskData() // Get risk levels from IPMA weather data
+    ]);
     
-    const data = await response.json();
-    
-    // Transform the data to match our interface
-    const incidents: FireIncident[] = data.data && Array.isArray(data.data) ? 
-      data.data.map((incident: any) => ({
+    // Transform the incidents data to match our interface
+    const incidents: FireIncident[] = incidentsResponse.data && Array.isArray(incidentsResponse.data) ? 
+      incidentsResponse.data.map((incident: any) => ({
         id: incident.id || String(Math.random()),
         district: incident.district || 'Unknown',
         location: incident.location || 'Unknown',
@@ -102,33 +282,6 @@ const fetchFireData = async (): Promise<FireData> => {
           aerial: parseInt(incident.aerial) || 0,
         }
       })) : [];
-
-    // Fetch risk levels (we would fetch this from another endpoint in a real app)
-    // For now, let's generate mock data based on districts in Portugal
-    const districts = [
-      'Aveiro', 'Beja', 'Braga', 'Bragança', 'Castelo Branco',
-      'Coimbra', 'Évora', 'Faro', 'Guarda', 'Leiria',
-      'Lisboa', 'Portalegre', 'Porto', 'Santarém', 'Setúbal',
-      'Viana do Castelo', 'Vila Real', 'Viseu'
-    ];
-    
-    const riskLevels: RiskLevel[] = districts.map(district => {
-      const levels: ('low' | 'moderate' | 'high' | 'very-high' | 'extreme')[] = 
-        ['low', 'moderate', 'high', 'very-high', 'extreme'];
-      
-      // Get a "random" but deterministic risk level based on the district name
-      const hash = district.split('').reduce((a, b) => a + b.charCodeAt(0), 0);
-      const today = new Date();
-      const dayOfYear = Math.floor((today.getTime() - new Date(today.getFullYear(), 0, 0).getTime()) / (1000 * 60 * 60 * 24));
-      
-      // Use a combination of the hash and day of year to determine the risk level
-      const levelIndex = Math.floor((hash + dayOfYear) % levels.length);
-      
-      return {
-        district,
-        level: levels[levelIndex]
-      };
-    });
     
     return {
       incidents,
