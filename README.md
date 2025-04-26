@@ -1,99 +1,78 @@
+# Incendios.pt
 
-# Wildfire Risk Monitoring Project
+**Incendios.pt** is a real-time wildfire monitoring and risk assessment platform for Portugal. The project provides an interactive map, live incident data, risk levels by district, and weather information, all in a modern and responsive web interface.
 
-## Getting Started with Git
+## 🚀 Features
 
-### 1. Initialize Git Repository
-```sh
-git init
-```
+- **Live Wildfire Map:** Interactive map with real-time fire incidents and risk levels by district.
+- **Active Fires List:** Detailed list of ongoing fires with popups and resource breakdown.
+- **Weather Integration:** Displays current weather conditions relevant to fire risk.
+- **Risk Visualization:** Color-coded risk levels for each district.
+- **Responsive Design:** Fully functional on desktop and mobile devices.
+- **Modern UI:** Built with reusable components and clean design.
 
-### 2. Add Your GitHub Repository as Remote
-```sh
-git remote add origin https://github.com/YOUR_USERNAME/YOUR_REPOSITORY_NAME.git
-```
+## 🛠️ Technologies Used
 
-### 3. Add Files to Git
-```sh
-# Add all files
-git add .
+- **React** (with TypeScript)
+- **Vite** (for fast development and build)
+- **React Leaflet** (interactive maps)
+- **Lucide React** (icon library)
+- **Tailwind CSS** (utility-first CSS framework)
+- **Shadcn UI** (UI components)
+- **React Query** (data fetching and caching)
+- **Date-fns** (date formatting)
+- **Zod** (schema validation)
+- **Sonner** (toast notifications)
+- **Radix UI** (accessible UI primitives)
+  
+## 📦 Getting Started
 
-# Or add specific files
-git add src/ public/ index.html
-```
+### Prerequisites
 
-### 4. Create Initial Commit
-```sh
-git commit -m "Initial commit: Wildfire Risk Monitoring Project"
-```
-
-### 5. Push to GitHub
-```sh
-# Push to main branch
-git push -u origin main
-```
-
-## Project Setup After Cloning
-
-```sh
-# Clone the repository
-git clone https://github.com/YOUR_USERNAME/YOUR_REPOSITORY_NAME.git
-
-# Navigate to project directory
-cd wildfire-risk-monitoring
-
-# Install dependencies
-npm install
-
-# Start development server
-npm run dev
-```
-
-## Prerequisites
-
-- Node.js (v18+ recommended)
+- Node.js (v18 or higher recommended)
 - npm or yarn
-- Git
 
-## Project Technologies
+### Installation
 
-- React with TypeScript
-- Leaflet Maps for interactive mapping
-- Tailwind CSS for styling
-- Shadcn UI components
-- React Query for data fetching
+```bash
+git clone https://github.com/your-username/incendios.pt.git
+cd incendios.pt
+npm install
+```
 
-## Features
+### Running Locally
 
-- Real-time wildfire monitoring
-- Risk level visualization by district
-- Interactive map with incident markers
-- Weather information display
-- Responsive design
-
-## Development
-
-To start developing:
-
-```sh
+```bash
 npm run dev
 ```
 
-The application will be available at `http://localhost:8080`
+The app will be available at [http://localhost:5173](http://localhost:5173) (or the port shown in your terminal).
 
-## Deployment
+### Building for Production
 
-Deploy through your preferred hosting platform. Make sure to:
+```bash
+npm run build
+```
 
-1. Build the project: `npm run build`
-2. Test the build locally: `npm run preview`
-3. Deploy the `dist` folder to your hosting service
+### Preview Production Build
 
-## Contributing
+```bash
+npm run preview
+```
 
-1. Fork the repository
-2. Create your feature branch: `git checkout -b feature/AmazingFeature`
-3. Commit your changes: `git commit -m 'Add some AmazingFeature'`
-4. Push to the branch: `git push origin feature/AmazingFeature`
-5. Open a Pull Request
+## 🌍 Data Sources
+
+- [fogos.pt API](https://api.fogos.pt/) — Real-time fire incidents
+- [IPMA Open Data](https://api.ipma.pt/) — Weather and risk data
+
+
+## 📄 License
+
+This project is licensed under the MIT License.
+
+---
+
+**Author:** RafaDev  
+**Project:** Incendios.pt
+
 
