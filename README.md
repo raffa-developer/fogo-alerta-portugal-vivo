@@ -2,6 +2,9 @@
 
 **Incendios.pt** is a real-time wildfire monitoring and risk assessment platform for Portugal. The project provides an interactive map, live incident data, risk levels by district, and weather information, all in a modern and responsive web interface.
 
+
+(**P.S** This project was made by me to study React.js and Frontend skills.)
+
 ## 🚀 Features
 
 - **Live Wildfire Map:** Interactive map with real-time fire incidents and risk levels by district.
@@ -43,8 +46,8 @@
 ### Installation
 
 ```bash
-git clone https://github.com/your-username/incendios.pt.git
-cd incendios.pt
+git clone https://github.com/Zipex-Dev/fogo-alerta-portugal-vivo.git
+cd fogo-alerta-portugal-vivo
 npm install
 ```
 
