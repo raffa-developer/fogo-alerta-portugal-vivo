@@ -59,19 +59,7 @@ npm run dev
 
 The app will be available at [http://localhost:5173](http://localhost:5173) (or the port shown in your terminal).
 
-### Building for Production
-
-```bash
-npm run build
-```
-
-### Preview Production Build
-
-```bash
-npm run preview
-```
-
-## 🌍 Data Sources
+## 🌍 Data Sources(APIs)
 
 - [fogos.pt API](https://api.fogos.pt/) — Real-time fire incidents
 - [IPMA Open Data](https://api.ipma.pt/) — Weather and risk data
