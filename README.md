@@ -1,4 +1,4 @@
-# Incendios.pt
+# Incendios.pt(Fogos.pt inspired)
 
 **Incendios.pt** is a real-time wildfire monitoring and risk assessment platform for Portugal. The project provides an interactive map, live incident data, risk levels by district, and weather information, all in a modern and responsive web interface.
 
