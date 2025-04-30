@@ -61,7 +61,7 @@ The app will be available at [http://localhost:5173](http://localhost:5173) (or 
 
 ## 🌍 Data Sources(APIs)
 
-- [fogos.pt API](https://api.fogos.pt/) — Real-time fire incidents
+- [fogos.pt API](https://api.fogos.pt/v2/incidents/active) — Real-time fire incidents
 - [IPMA Open Data](https://api.ipma.pt/) — Weather and risk data
 
 ## 📄 License
